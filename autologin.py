@@ -53,5 +53,5 @@ print "You are now online."
 
 #print thePage
 
-#This python script is written and managed by Raja Joddar. This python script is made for PMPL (Meghbela broadband) user to easy login in, mainly for Ubuntu or Any GNU/Linux User.
+#This python script is written and managed by Raja Joddar. This python script is made for PMPL (Meghbela broadband) user to easy login, mainly for Ubuntu or Any GNU/Linux User.
 #This script is now under development, any guys willing to contribute please notify me on "www.facebook.com/rajajoddar".
