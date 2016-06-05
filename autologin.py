@@ -3,11 +3,6 @@ import urllib2
 import time
 import sys
 
-# while True:
-#    cmd = raw_input('Do you want to quit? Enter \'q\'!')
-#    if cmd == 'q':
-#        break
-
 try:
     login=sys.argv[1] # 0 -> logout 1-> login
 except IndexError:
@@ -20,7 +15,7 @@ if(login==0):   # LOGOUT
     submitVars['mode'] = "191"
     submitVars['isAccessDenied'] = "false"
     submitVars['url'] = "10.10.0.1/24online/webpages/client.jsp"
-    submitVars['message'] = "You are Now LOGGED OUT"
+    submitVars['message'] = "You are Now LOG OUT"
     submitVars['checkClose'] = "0"
     submitVars['sessionTimeout'] = "-1.0"
     submitVars['guestmsgreq'] = "false"
@@ -33,13 +28,13 @@ else:           # LOGIN
     submitVars['mode'] = "191"
     submitVars['isAccessDenied'] = "null"
     submitVars['url'] = "10.10.0.1/24online/webpages/client.jsp"
-    submitVars['message'] = "You are Now LOGGED IN"
+    submitVars['message'] = "You are Now LOG IN"
     submitVars['checkClose'] = "0"
     submitVars['sessionTimeout'] = "0.0"
     submitVars['guestmsgreq'] = "false"
 
-    submitVars['username'] = "rajakpa_swbk"
-    submitVars['password'] = "12345"
+    submitVars['username'] = "raxxxxx_swbk"     #enter your username
+    submitVars['password'] = "12345"            #enter your password
 
     referer = "10.10.0.1/24online/webpages/client.jsp" # URL of referring web page goes here
     
@@ -55,7 +50,8 @@ thePage = response.read()
 
 print "You are now online."
 
-# goto True
-
 
 #print thePage
+
+#This python script is written and managed by Raja Joddar. This python script is made for PMPL (Meghbela broadband) user to easy login in, mainly for Ubuntu or Any GNU/Linux User.
+#This script is now under development, any guys willing to contribute please notify me on "www.facebook.com/rajajoddar".
