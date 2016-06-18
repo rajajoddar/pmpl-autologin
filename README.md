@@ -16,5 +16,10 @@ Windows user can use this script for login or just fun, just download the python
 
 Ubuntu and GNU/Linux user just install the python software and install it, run it vai terminal and enjoy. Trouble for installing Python in Ubuntu Or any Linux distros, just follow this link, https://www.unixmen.com/howto-install-python-3-x-in-ubuntu-debian-fedora-centos/
 
+If you need some help please poke us, we are happy to help you, thanks. 
+```        1. https://www.facebook.com/rajajoddar
+           2. https://www.facebook.com/akash.bose7
+``` 
+
 This script is now under development, any guys willing to contribute please notify me on "www.facebook.com/rajajoddar"
 
