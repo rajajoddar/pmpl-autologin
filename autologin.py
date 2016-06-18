@@ -2,73 +2,170 @@ import urllib
 # import urllib2
 import time
 import sys
-import pprint, getopt, os
+import pprint, getopt, os, re
+
+SCRIP_VERION = "0.2.0"
 
 PY_VERSION_MAJOR = sys.version_info.major
 PY_VERSION_MINOR = sys.version_info.minor
 
-# def __main__(argv):
-#     opts, args = getopt.getopt(argv,"chi:o:",["ifile=","ofile="])
-#     pprint.pprint(os.path.dirname(os.path.abspath(__file__)))
-#     sys.exit()
 
-#     for opt, arg in opts:
-#         if opt == '-c':
-#             print ("Welcome to configure.")
-#             sys.exit()
-#         elif opt == '-h':
-#             print ("awesome")
-#             sys.exit()
 
-# if __name__ == "__main__":
-#    __main__(sys.argv[1:])
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+CURRENT_FILE = os.path.basename(__file__)
 
-try:
-    login=sys.argv[1] # 0 -> logout 1-> login
-except IndexError:
-    login = 1
+# This is the confiugaration file name.
+CONFIG_FILE_NAME = 'config.al'
 
-submitVars={}
+# This is the config file path
+CONFIG_PATH = os.path.join(CURRENT_DIR, CONFIG_FILE_NAME)
 
-if(login==0):   # LOGOUT
 
-    submitVars['mode'] = "191"
-    submitVars['isAccessDenied'] = "false"
-    submitVars['url'] = "10.10.0.1/24online/webpages/client.jsp"
-    submitVars['message'] = "You are Now LOG OUT"
-    submitVars['checkClose'] = "0"
-    submitVars['sessionTimeout'] = "-1.0"
-    submitVars['guestmsgreq'] = "false"
+# All variable that will be used for request.
+REFERER_LOGIN = "10.10.0.1/24online/webpages/client.jsp",
+REFERER_LOGOUT = "http://10.10.0.1/24online/servlet/E24onlineHTTPClient"
+SUBMIT_URL = "http://10.10.0.1/24online/servlet/E24onlineHTTPClient"
 
-    referer = "http://10.10.0.1/24online/servlet/E24onlineHTTPClient" # URL of referring web page goes here
 
-else:           # LOGIN
+# All string for final mesage
+FINAL_MESSAGES = {
+    'login':    'We have been able to log you in.',
+    'logout':   'You are now logged out.',
+    'renew':    'Please renew your package.',
+    'unknown':  'Well, there might be some problem with logging in, try to use log in through browser.',
+    'wup':      'Wrong username/password, please reconfigure.'
+}
+
+
+def getStatusFromPage( page ):
+
+    msg = '' # This is the varialbe where messageg will be stored
+    # we are gonna check ability for every messages one by one.
+    # To do that store all the patterns in a variable.
+    # TODO: more status to be updated.
+    patterns = {
+        'login':    r'(Remaining Time:)',
+        'renew':    r'Please renew your',
+        'logout':   r'logged off',
+        'wup':      r'Wrong username'
+    }
+
+    for status, regex in patterns.iteritems():
+        if re.search(regex, page, re.I) is not None:
+            return status
+
+    #if not thing matched 
+    return 'unknown'
+
+#This is the creating configuration file function
+def createConfigFile( filePath ):
+    # file = open(filePath, 'w');
+
+    # Store the username and password
+    username = Input("Please enter your username: ")
+    password = Input("Please enter your password: ")
+
+    #Now create the file.
+    file = open(CONFIG_PATH, 'w')
+    file.writelines(['username=' + username,'\n', 'password=' + password])
+    file.close()
+
+#This method gets the log in vars.
+def getLoginVars():
+
+
+    #get username and password.
+    info = getInfoFromConfig()
+
+    # Its now time to store vars.
+    return {
+        'mode':             "191",
+        'isAccessDenied':   "null",
+        'url':              "10.10.0.1/24online/webpages/client.jsp",
+        'message':          "You are now Log In",
+        'checkClose':       "0",
+        'sessionTimeout':   "0.0",
+        'guestmsgreq':      "false",
+        'username':         info['username'],
+        'password':         info['password'],
+    }
+
+#this method helps to get log out vars.
+def getLogoutVars():
+
+    #get username and password.
+    info = getInfoFromConfig()
+
+    return {
+        'mode':             "193",
+        'isAccessDenied':   "false",
+        'url':              "10.10.0.1/24online/webpages/client.jsp",
+        'message':          "You are now log out.",
+        'checkClose':       "1",
+        'sessionTimeout':   "-1.0",
+        'guestmsgreq':      "false",
+        'loggedinuser':     info['username'],
+        'username':         info['username']
+    }
+
+# This function helps to send request.
+def sendRequest( svars, referer ):
+    
+    req = Req(SUBMIT_URL, urlen(svars))
+    req.add_header('Referer', referer)
+    res = urlo(req)
+    return res.read()
+
+# get username and password from config file.
+def getInfoFromConfig():
+
+    # First get the  configuration file.
+    file = open(CONFIG_PATH, 'r')
+    configs = file.read()
+    file.close()
+
+    # Now check if the `username` or `password` parameter is available in config file.
+    # First match the `username`
+    matchUsername = re.search(r'username(?:[^\S]|)=(?:[^\S]|)(.+)(:?[^\S]|)',configs, re.I)
+    matchPassword = re.search(r'password(?:[^\S]|)=(?:[^\S]|)(.+)(:?[^\S]|)',configs, re.I)
+    
+    
+    if matchPassword is None or matchUsername is None:
+        raise Exception("Your configatation file is broken, type ./" + CURRENT_FILE + " -c to reconfigure.")
+
+    return {
+        'username': matchUsername.group(1).strip(),
+        'password': matchPassword.group(1).strip(),
+    }
+
+# send log in request.
+def loginUser():
+    print ("Sending request for logging in..")
     time.sleep(3)
-    
-    submitVars['mode'] = "191"
-    submitVars['isAccessDenied'] = "null"
-    submitVars['url'] = "10.10.0.1/24online/webpages/client.jsp"
-    submitVars['message'] = "You are Now LOG IN"
-    submitVars['checkClose'] = "0"
-    submitVars['sessionTimeout'] = "0.0"
-    submitVars['guestmsgreq'] = "false"
 
-    submitVars['username'] = "Sohini_scc"     #enter your username
-    submitVars['password'] = "12345"            #enter your password
+    page = sendRequest( getLoginVars(), REFERER_LOGIN )
 
-    referer = "10.10.0.1/24online/webpages/client.jsp" # URL of referring web page goes here
-    
+    # Now print the final message from page.
+    print ( FINAL_MESSAGES[ getStatusFromPage( page ) ] )
 
-submitUrl = "http://10.10.0.1/24online/servlet/E24onlineHTTPClient" # URL of form action goes here
+# send log out request.
+def logoutUser():
+    print ("Sending request for logging out..")
+    time.sleep(3)
 
+    page = sendRequest( getLogoutVars(), REFERER_LOGOUT )
 
+    # Now print the final message from page.
+    print ( FINAL_MESSAGES[ getStatusFromPage( page ) ] )
 
+###### Python 2 AND 3 Compatibility work started here ######
 
 
-# def printhelp():
-#     print ("help")
-
-
+def Input( str ):
+    if PY_VERSION_MAJOR < 3:
+        return raw_input( str )
+    else:
+        return input( str )
 
 def Req( url, vars ):
     if PY_VERSION_MAJOR < 3:
@@ -92,15 +189,78 @@ def urlen( vars ):
         from urllib.parse import urlencode
         return urlencode(vars).encode('UTF-8')
 
-submitVarsUrlencoded = urlen(submitVars)
-req = Req(submitUrl, submitVarsUrlencoded)
-req.add_header('Referer', referer)
-response = urlo(req)
-thePage = response.read()
+###### END OF Python 2 AND 3 Compatibility work ######
 
-print ("You are now online.")
 
-# print thePage
 
-#This python script is written and managed by Raja Joddar. This python script is made for PMPL (Meghbela broadband) user to easy login, mainly for Ubuntu or Any GNU/Linux User.
-#This script is now under development, any guys willing to contribute please notify me on "www.facebook.com/rajajoddar".
+# Help function
+def printHelp():
+    print(
+        """
+           PMPL-AUTO LOGIN version %s
+           Please report bugs to our git hub page: https://github.com/boseakash7/pmpl-autologin
+
+           example: %s -l
+
+           -l --log-in      send a log in request.
+           -L --log-out     send a log out request.
+           -c               configure again for username and password.
+           -h --help        show this help.
+
+        """ % (SCRIP_VERION, CURRENT_FILE)
+        )
+
+
+def __main__(argv):
+
+    #First check if the configgaration file exists.
+    #If not then just simply ctreate one.
+    if os.path.isfile(CONFIG_PATH) is not True:
+        print ("\nWelcome to PMPL-AUTOLOGIN.")
+        print ("We need to configure your username and password.\n")
+        print ("Warning: write your username and password with maintained caps.\n")
+        createConfigFile(CONFIG_PATH)
+
+        # check if the user want to log in right now.
+        if Input("Do you want to get login now? (y/n)").lower()[0] == 'y':
+            loginUser()
+        else:
+            sys.exit()  # Exit the script as user do not want to get logged in
+
+    #Now its time to work with arguments
+    opts, args = getopt.getopt(argv,"chlL",["log-in", "log-out"])
+    
+    if len(argv) > 1:
+        print("Please use only one option.")
+        sys.exit()
+    elif len(argv) < 1:
+        printHelp()
+        sys.exit()
+
+
+    for opt, arg in opts:
+
+        if opt == '-c':
+            print ("Welcome to configation.")
+            createConfigFile(CONFIG_PATH)
+            sys.exit()
+
+        elif opt == '-h' or opt == '--help':  
+            printHelp()
+
+        elif opt == '-L' or opt == '--log-out':
+            logoutUser()
+
+        elif opt == '-l' or opt == '--log-in':
+            loginUser()
+
+
+if __name__ == "__main__":
+    try:
+        __main__(sys.argv[1:])
+    except (KeyboardInterrupt, EOFError) as e:
+        print("\n\nAs you command, exiting in the middle..")
+    except getopt.GetoptError:
+        printHelp()
+    # except Exception as ex:
+    #     print("\n\nError: " + str(ex))
