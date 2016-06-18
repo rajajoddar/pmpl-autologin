@@ -199,8 +199,8 @@ def printHelp():
     print(
         """
            PMPL-AUTO LOGIN version %s
-           Please report bugs to our git hub page: https://github.com/boseakash7/pmpl-autologin
-
+           Please report bugs to our git hub page: https://github.com/rajajoddar/pmpl-autologin
+           Contributors : Raja Joddar & Akash Bose
            example: %s -l
 
            -l --log-in      send a log in request.
